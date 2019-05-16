@@ -1,3 +1,97 @@
-<p>
-  dashboard works!
-</p>
+<mat-toolbar color="primary">
+  <mat-toolbar-row>
+    <span>BacklogBI</span>
+    <span class="spacer"></span>
+    <img class="icon" src="https://www.karabiner.tech/asset/images/common/member_lee.jpg">
+    <div class="divide"></div>
+    <img class="pj-icon" src="http://www.kachikaihatsu.co.jp/images/company/company_01.jpg">
+    <span class="pj-name">project_name</span>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<div class="main">
+  <div class="scores">
+    <div class="score-card">
+      <div class="title">タスク数</div>
+      <div class="score-card-score">100</div>
+      <div class="score-card-diff">前年比+10</div>
+    </div>
+    <div class="score-card">
+      <div class="title">タスク消化率</div>
+      <div class="score-card-score">68%</div>
+      <div class="score-card-diff">前年比-8%</div>
+    </div>
+    <div class="score-card">
+      <div class="title">予実差平均</div>
+      <div class="score-card-score">1.8h</div>
+      <div class="score-card-diff">前年比-0.5h</div>
+    </div>
+  </div>
+  <div class="charts">
+    <div class="category-chart">
+      <div class="title">カテゴリー内訳</div>
+      <canvas #category width="250" height="450"></canvas>
+
+      <!-- <img width="400px" src="https://www.sozailab.jp/db_img/sozai/523/d3879a5e30aa4f54cf5ee070ecd05013.png"> -->
+    </div>
+    <div class="task-chart">
+      <div class="title">タスク消化状況</div>
+      <canvas #task width="550" height="450"></canvas>
+
+      <!-- <img width="400px" src="https://pds.exblog.jp/pds/1/201108/22/30/a0030830_725755.gif" alt=""> -->
+    </div>
+  </div>
+  <div class="members">
+    <div class="title">メンバー一覧</div>
+    <table mat-table [dataSource]="dataSource">
+
+      <ng-container matColumnDef="user">
+        <th mat-header-cell *matHeaderCellDef> メンバー</th>
+        <td mat-cell *matCellDef="let element"> <div class="user"><img class="icon" [src]="element.user.icon">{{element.user.name}} </div></td>
+      </ng-container>
+
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef> 担当カテゴリ </th>
+        <td mat-cell *matCellDef="let element"> 10 </td>
+      </ng-container>
+
+      <ng-container matColumnDef="doneTask">
+        <th mat-header-cell *matHeaderCellDef> タスク消化数 </th>
+        <td mat-cell *matCellDef="let element"> {{element.doneTask}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="allTasks">
+        <th mat-header-cell *matHeaderCellDef> 担当タスク数 </th>
+        <td mat-cell *matCellDef="let element"> {{element.allTasks}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="diff">
+        <th mat-header-cell *matHeaderCellDef> 予実差平均 </th>
+        <td mat-cell *matCellDef="let element"> {{element.diff}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="wiki">
+        <th mat-header-cell *matHeaderCellDef> wiki投稿数 </th>
+        <td mat-cell *matCellDef="let element"> {{element.wiki}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="star">
+        <th mat-header-cell *matHeaderCellDef> スター数 </th>
+        <td mat-cell *matCellDef="let element"> {{element.star}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="partner">
+        <th mat-header-cell *matHeaderCellDef> よく絡んだ人 </th>
+        <td mat-cell *matCellDef="let element">
+            <div class="user"><img class="icon" [src]="element.partner.icon">{{element.partner.name}} </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator color="primary" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+  </div>
+
+</div>
