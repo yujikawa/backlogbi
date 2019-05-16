@@ -1,1 +1,2 @@
-# bucklogbi
+# BacklogBI
+BacklogのBIツールです
