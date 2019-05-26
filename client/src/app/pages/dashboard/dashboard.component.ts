@@ -1,95 +1,172 @@
-import { Component, OnInit, ViewChild, AfterViewInit, ElementRef } from '@angular/core';
+import { Observable } from 'rxjs';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator, MatTableDataSource } from '@angular/material';
-import { Chart, ChartData, ChartOptions } from 'chart.js';
+
+import { IssueStats } from './../../models/issue_stats';
+import { Project } from './../../models/project';
+import { Count } from './../../models/count';
+import { UserStats } from './../../models/member_stats';
+import { ApiService } from './../../services/api.service';
+import { range } from '../../utils/caluc';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['user', 'category', 'doneTask', 'allTasks', 'diff', 'wiki', 'star', 'partner'];
-  dataSource = new MatTableDataSource<PeriodicElement>(ELEMENT_DATA);
+export class DashboardComponent implements OnInit {
+  displayedColumns: string[] = ['user', 'category', 'status', 'actualAvgTime'];
+  dataSource: MatTableDataSource<UserStats>;
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  @ViewChild('category')
-  ref1: ElementRef;
+  issues: IssueStats;
+  $issues: Observable<IssueStats>;
+  selectedProjectId: number;
+  projects: Array<Project> = [];
+  selectedMonth = moment().format('YYYY-MM');
 
-  @ViewChild('task')
-  ref2: ElementRef;
+  COLOR_BG: Array<string> = [
+    'rgba(255, 99, 132, 1)',
+    'rgba(54, 162, 235, 1)',
+    'rgba(255, 206, 86, 1)',
+    'rgba(75, 192, 192, 1)',
+    'rgba(153, 102, 255, 1)',
+    'rgba(150, 200, 200, 1)'
+  ];
 
-  context1: CanvasRenderingContext2D;
-  context2: CanvasRenderingContext2D;
+  COLOR_BORFER: Array<string> = [
+    'rgba(255,99,132,1)',
+    'rgba(54, 162, 235, 1)',
+    'rgba(255, 206, 86, 1)',
+    'rgba(75, 192, 192, 1)',
+    'rgba(153, 102, 255, 1)',
+    'rgba(150, 200, 200, 1)'
+  ];
 
-  chart1: Chart;
-  chart2: Chart;
-
-  constructor() { }
+  constructor(private api: ApiService) { }
 
   ngOnInit() {
-    this.dataSource.paginator = this.paginator;
-
+    this.api.getProjects().subscribe(
+      result => {
+        this.projects = result;
+        this.selectedProjectId = this.projects[0].id;
+        this.reload();
+      },
+      error => { }
+    );
 
   }
 
-  ngAfterViewInit() {
-    // canvasを取得
-    this.context1 = this.ref1.nativeElement.getContext('2d');
-    this.context2 = this.ref2.nativeElement.getContext('2d');
+  reload() {
+    this.$issues = this.api.getStatsIssues(this.selectedMonth, this.selectedProjectId);
+    this.api.getStatsMembers(this.selectedMonth, this.selectedProjectId).subscribe(
+      resultMem => {
+        this.dataSource = new MatTableDataSource<UserStats>(resultMem.users);
+        this.dataSource.paginator = this.paginator;
+      },
+      error => {
+        console.error(error);
+      }
+    );
+  }
 
-    // チャートの作成
-    this.chart1 = new Chart(this.context1, {
-      type: 'pie',     // とりあえず doughnutチャートを表示
+  makePieDataMonthlyByUser(issues: UserStats): any {
+    const data = {
+      type: 'pie',
       data: {
-        labels: ['開発', '運用', '障害', 'その他'],
+        labels: issues.byCategories.map((e, index, array) => {
+          return e.name;
+        }),
         datasets: [{
-          label: '# of Votes',
-          data: [12, 19, 3, 5],
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            // 'rgba(75, 192, 192, 0.2)',
-            // 'rgba(153, 102, 255, 0.2)',
-            'rgba(150, 200, 200, 0.2)'
-          ],
-          borderColor: [
-            'rgba(255,99,132,1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            // 'rgba(75, 192, 192, 1)',
-            // 'rgba(153, 102, 255, 1)',
-            'rgba(150, 200, 200, 1)'
-          ],
+          // label: '# of Votes',
+          data: issues.byCategories.map((e, index, array) => {
+            return e.count;
+          }),
+          backgroundColor: this.COLOR_BG,
+          borderColor: this.COLOR_BORFER,
           borderWidth: 1
         }]
       },      // データをプロパティとして渡す
       options: {
+        // legend: false,
+      } // オプションをプロパティとして渡す
+    };
+    return data;
+  }
+
+  makeBarDataMonthlyByUser(issues: UserStats): any {
+    const data = {
+      type: 'horizontalBar',     // とりあえず doughnutチャートを表示
+      data: {
+        // labels: range(parseInt(startDate, 10), parseInt(endDate, 10)),
+        datasets: issues.byStatus.map((e, index, array) => {
+          return {
+            data: [(e.count as Array<number>).reduce((acc, currentVal) => {
+              return acc + currentVal;
+            }, 0)],
+            label: e.name,
+            backgroundColor: this.COLOR_BG[e.id % this.COLOR_BG.length]
+          };
+        })
+      },      // データをプロパティとして渡す
+      options: {
         scales: {
-          yAxes: [{
+          xAxes: [{
+            stacked: true,
             ticks: {
-              beginAtZero: true
-            }
+              stepSize: 1
+            },
+          }],
+          yAxes: [{
+            stacked: true,
+
           }]
         }
       } // オプションをプロパティとして渡す
-    });
+    };
+    return data;
+  }
 
-    // チャートの作成
-    this.chart2 = new Chart(this.context2, {
+  makePieDataMonthly(issues: IssueStats): any {
+    const data = {
+      type: 'pie',
+      data: {
+        labels: issues.byCategories.map((e, index, array) => {
+          return e.name;
+        }),
+        datasets: [{
+          // label: '# of Votes',
+          data: issues.byCategories.map((e, index, array) => {
+            return e.count;
+          }),
+          backgroundColor: this.COLOR_BG,
+          borderColor: this.COLOR_BORFER,
+          borderWidth: 1
+        }]
+      },      // データをプロパティとして渡す
+      options: {
+        // legend: false,
+      } // オプションをプロパティとして渡す
+    };
+    return data;
+  }
+
+  makeBarDataMonthly(issues: IssueStats): any {
+    const startDate: string = issues.statsInfo.dueDateSince.split('-')[2];
+    const endDate: string = issues.statsInfo.dueDateUntil.split('-')[2];
+
+    const data = {
       type: 'bar',     // とりあえず doughnutチャートを表示
       data: {
-        labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
-        datasets: [{
-          data: [4, 5, 9, 14, 15, 24, 30, 10, 4, 5, 2, 10],
-          label: '完了',
-          backgroundColor: 'rgba(168, 207, 240, 1)'
-        },
-        {
-          data: [0.4, 0.5, 0.9, 1.4, 1.5, 2, 4, 3.0, 3, 4, 5, 2, 1],
-          label: '未完了',
-          backgroundColor: 'rgba(252, 165, 175, 1)'
-        }]
+        labels: range(parseInt(startDate, 10), parseInt(endDate, 10)),
+        datasets: issues.byStatus.map((e, index, array) => {
+          return {
+            data: e.count,
+            label: e.name,
+            backgroundColor: this.COLOR_BG[e.id % this.COLOR_BG.length]
+          };
+        })
       },      // データをプロパティとして渡す
       options: {
         scales: {
@@ -97,59 +174,18 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             stacked: true
           }],
           yAxes: [{
-            stacked: true
+            stacked: true,
+            ticks: {
+              stepSize: 1
+            },
           }]
         }
       } // オプションをプロパティとして渡す
-    });
-
+    };
+    return data;
   }
 
-}
-class User {
-  name: string;
-  icon: string;
-}
-export interface PeriodicElement {
-  user: User;
-  category: Array<number>;
-  doneTask: number;
-  allTasks: number;
-  diff: string;
-  wiki: number;
-  star: number;
-  partner: User;
-}
 
-const ELEMENT_DATA: PeriodicElement[] = [
-  {
-    user: { name: 'kawakami', icon: 'https://www.karabiner.tech/asset/images/common/member_lee.jpg' },
-    category: [20, 10, 20, 20],
-    doneTask: 40,
-    allTasks: 50,
-    diff: '-2~+3',
-    wiki: 10,
-    star: 10,
-    partner: { name: 'kotaro', icon: 'https://www.karabiner.tech/asset/images/common/member_kotaro.jpg' },
-  },
-  {
-    user: { name: 'kawakami', icon: 'https://www.karabiner.tech/asset/images/common/member_lee.jpg' },
-    category: [20, 10, 20, 20],
-    doneTask: 40,
-    allTasks: 50,
-    diff: '-2~+3',
-    wiki: 10,
-    star: 10,
-    partner: { name: 'kotaro', icon: 'https://www.karabiner.tech/asset/images/common/member_kotaro.jpg' },
-  },
-  {
-    user: { name: 'kawakami', icon: 'https://www.karabiner.tech/asset/images/common/member_lee.jpg' },
-    category: [20, 10, 20, 20],
-    doneTask: 40,
-    allTasks: 50,
-    diff: '-2~+3',
-    wiki: 10,
-    star: 10,
-    partner: { name: 'kotaro', icon: 'https://www.karabiner.tech/asset/images/common/member_kotaro.jpg' },
-  },
-];
+
+
+}

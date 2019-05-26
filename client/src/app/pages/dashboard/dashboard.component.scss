@@ -17,6 +17,7 @@
 mat-toolbar {
   position: sticky;
   top: 0;
+  z-index: 1;
   // background-color: #EDF4F0;
   // color: #777777;
   // border-bottom: 1px solid #e3e3e3;
@@ -46,6 +47,39 @@ mat-toolbar {
   border-left: 1px solid #beb9b9;
 }
 
+// form
+.form {
+  @include card;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px;
+  color: #777777;
+  background-color: #ffffff;
+}
+.select-project {
+  width: 300px;
+  height: 60px;
+  background-color: #e3e3e3;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0;
+  color: #777777;
+  border: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+.select-month{
+  width: 200px;
+  background-color: #e3e3e3;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+.submit {
+  background-color: #00d68c;
+  color: white;
+}
+
 // main
 .main {
   width: 900px;
@@ -53,6 +87,7 @@ mat-toolbar {
   flex-direction: column;
   margin: auto;
 }
+
 
 // score cards
 .scores {
@@ -87,6 +122,7 @@ mat-toolbar {
 }
 .category-chart {
   @include card;
+  height: 300px;
 }
 .task-chart {
   @include card;
@@ -109,11 +145,30 @@ td {
   color: #777777;
 }
 mat-paginator {
-  // background: #ffffff;
+  // background: #585858;
   // color: #777777;
 }
 .user {
  display: flex;
  flex-direction: row;
  align-items: center;
+}
+
+.mini-pie {
+  @include card;
+  width: 100px;
+  // height: 200px;
+}
+
+.mini-bar {
+  @include card;
+  width: 200px;
+  height: 150px;
+}
+
+// loading
+.loading {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
