@@ -7,6 +7,9 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatTableModule} from '@angular/material/table';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatSelectModule} from '@angular/material/select';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatIconModule} from '@angular/material/icon';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -17,12 +20,14 @@ import { ApiService } from './services/api.service';
 import { ChartComponent } from './components/chart/chart.component';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule, MatInputModule, MatProgressSpinnerModule } from '@angular/material';
+import { SettingsComponent } from './pages/settings/settings.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DashboardComponent,
-    ChartComponent
+    ChartComponent,
+    SettingsComponent,
   ],
   imports: [
     BrowserModule,
@@ -37,6 +42,9 @@ import { MatButtonModule, MatInputModule, MatProgressSpinnerModule } from '@angu
     MatButtonModule,
     MatInputModule,
     MatProgressSpinnerModule,
+    MatMenuModule,
+    MatIconModule,
+    MatSnackBarModule,
   ],
   providers: [ApiService],
   bootstrap: [AppComponent],

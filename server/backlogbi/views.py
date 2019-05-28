@@ -1,15 +1,33 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import analyze
 import datetime
+import json
 
-api = Flask(__name__)
-CORS(api)
+from flask import jsonify, request
+from backlogbi import api
+from backlogbi.models import Setting
+from backlogbi import analyze
 
 
 @api.route('/healthy', methods=['GET'])
 def healthy():
     return jsonify({'message': 'success'})
+
+
+@api.route('/v1/settings', methods=['GET'])
+def get_settings():
+    s = Setting()
+    return jsonify({'endpoint': s.endpoint, 'apiKey': s.api_key})
+
+
+@api.route('/v1/settings', methods=['POST', 'PUT'])
+def create_settings():
+    data = request.data.decode('utf-8')
+    data = json.loads(data)
+    s = Setting()
+    result = s.set_option(data['endpoint'], data['apiKey'])
+    if result:
+        return jsonify({'endpoint': s.endpoint, 'apiKey': s.api_key})
+    else:
+        return jsonify({'endpoint': '', 'apiKey': ''})
 
 
 @api.route('/v1/projects', methods=['GET'])
@@ -41,7 +59,6 @@ def get_issues():
     return jsonify(result)
 
 
-
 @api.route('/v1/stats/members', methods=['GET'])
 def get_members():
     yyyymm = request.args.get('yyyymm')
@@ -61,7 +78,3 @@ def get_members():
     result = analyze.get_members_stats(start_date, end_date, project_id)
 
     return jsonify(result)
-
-
-if __name__ == '__main__':
-    api.run(host='0.0.0.0', port=8080)

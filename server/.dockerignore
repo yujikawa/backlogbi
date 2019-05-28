@@ -4,5 +4,4 @@
 
 data/*
 *.pyc
-*.db
 *.pickle

@@ -1,10 +1,3 @@
-<mat-toolbar color="primary">
-  <mat-toolbar-row>
-    <span>BacklogBI</span>
-    <span class="spacer"></span>
-  </mat-toolbar-row>
-</mat-toolbar>
-
 <div class="main">
   <div class="form">
     <!-- <label>プロジェクト</label>
@@ -13,11 +6,11 @@
         </select> -->
     <label>プロジェクト</label>
 
-      <select class="select-project" [(ngModel)]="selectedProjectId">
-        <option *ngFor="let p of projects" [value]="p.id" selected>
-          {{p.name}} [{{p.projectKey}}]
-        </option>
-      </select>
+    <select class="select-project" [(ngModel)]="selectedProjectId">
+      <option *ngFor="let p of projects" [value]="p.id" selected>
+        {{p.name}} [{{p.projectKey}}]
+      </option>
+    </select>
     集計期間
     <input class="select-month" matInput type="month" [(ngModel)]="selectedMonth">
     <button class="submit" mat-button (click)="reload()">集計する</button>

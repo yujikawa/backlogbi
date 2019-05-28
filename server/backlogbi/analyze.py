@@ -5,9 +5,7 @@ import pickle
 import calendar
 import datetime
 import urllib
-
-_BACKLOG_ENDPOINT = os.environ['BACKLOG_ENDPOINT']
-_API_KEY = os.environ['BACKLOG_API_KEY']
+from backlogbi.models import Setting
 
 
 def get_month_range(year: int, month: int) -> (str, str):
@@ -25,8 +23,9 @@ def dict_index(data: [dict], search: any):
 
 
 def get_projects():
-    url = urllib.parse.urljoin(_BACKLOG_ENDPOINT, '/api/v2/projects')
-    query_params = urllib.parse.urlencode({'apiKey': _API_KEY})
+    s = Setting()
+    url = urllib.parse.urljoin(s.endpoint, '/api/v2/projects')
+    query_params = urllib.parse.urlencode({'apiKey': s.api_key})
     req = urllib.request.Request('{}?{}'.format(url, query_params))
     with urllib.request.urlopen(req) as res:
         projects = json.load(res)
@@ -34,9 +33,10 @@ def get_projects():
 
 
 def get_issue_stats(start_date: str, end_date: str, project_id: str) -> dict:
-    url = urllib.parse.urljoin(_BACKLOG_ENDPOINT, '/api/v2/issues')
+    s = Setting()
+    url = urllib.parse.urljoin(s.endpoint, '/api/v2/issues')
     query_params = urllib.parse.urlencode(
-        {'apiKey': _API_KEY, 'dueDateSince': start_date, 'dueDateUntil': end_date, 'projectId[]': project_id})
+        {'apiKey': s.api_key, 'dueDateSince': start_date, 'dueDateUntil': end_date, 'projectId[]': project_id})
     req = urllib.request.Request('{}?{}'.format(url, query_params))
     with urllib.request.urlopen(req) as res:
         issues = json.load(res)
@@ -91,9 +91,10 @@ def get_issue_stats(start_date: str, end_date: str, project_id: str) -> dict:
 
 
 def get_members_stats(start_date: str, end_date: str, project_id: str) -> dict:
-    url = urllib.parse.urljoin(_BACKLOG_ENDPOINT, '/api/v2/issues')
+    s = Setting()
+    url = urllib.parse.urljoin(s.endpoint, '/api/v2/issues')
     query_params = urllib.parse.urlencode(
-        {'apiKey': _API_KEY, 'dueDateSince': start_date, 'dueDateUntil': end_date, 'projectId[]': project_id})
+        {'apiKey': s.api_key, 'dueDateSince': start_date, 'dueDateUntil': end_date, 'projectId[]': project_id})
     req = urllib.request.Request('{}?{}'.format(url, query_params))
     with urllib.request.urlopen(req) as res:
         issues = json.load(res)

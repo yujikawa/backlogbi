@@ -1,0 +1,16 @@
+<div class="main">
+  <div class="form">
+
+
+      <label>Endpoint</label>
+
+      <input class="endpoint" [(ngModel)]="endpoint" matInput placeholder="https:XXXX.backlog.jp" type="url">
+      <label>API KEY</label>
+
+      <textarea class="api-key" matInput [(ngModel)]="apiKey" placeholder="XXXXXXXXXX"></textarea>
+    <button class="submit" mat-button (click)="submit()">登録する</button>
+
+  </div>
+
+
+</div>
