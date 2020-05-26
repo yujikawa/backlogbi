@@ -1,8 +1,0 @@
-.venv/*
-.vscode/*
-.idea/*
-
-data/*
-*.pyc
-*.db
-*.pickle
