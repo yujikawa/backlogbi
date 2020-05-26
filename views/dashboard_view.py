@@ -3,13 +3,13 @@ import pandas as pd
 import plotly.express as px
 from helpers import BacklogAPI
 from models import Setting
-
+from datetime import datetime
 
 class DashboardView(object):
     def __init__(self):
         st.title('Dashboard')
 
-        start_date = st.date_input(label='開始日付').strftime('%Y-%m-%d')
+        start_date = st.date_input(label='開始日付', value=datetime.today().replace(day=1)).strftime('%Y-%m-%d')
         end_date = st.date_input(label='終了日付').strftime('%Y-%m-%d')
 
         button = st.button('検索')
