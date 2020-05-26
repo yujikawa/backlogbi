@@ -5,6 +5,7 @@ from helpers import BacklogAPI
 from models import Setting
 from datetime import datetime
 import base64
+from helpers.word_cloud import word_clound_output
 
 
 class DashboardView(object):
@@ -84,6 +85,12 @@ class DashboardView(object):
             """)
             st.dataframe(df_count[df_count['status_name'] == '完了'][['assignee_name', 'digestibility']].sort_values(
                 ['digestibility'], ascending=False))
+
+            st.write("""
+            ## word cloud
+            """)
+            wordcloud = word_clound_output(df.summary.unique())
+            st.image(wordcloud.to_image())
 
     def get_table_download_link(self, df):
         csv = df.to_csv(index=False)
