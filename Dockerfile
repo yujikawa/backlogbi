@@ -17,4 +17,4 @@ RUN cd /tmp && poetry install --no-dev
 COPY . .
 EXPOSE 8501
 
-CMD ["streamlit", "run", "app.py"] # set default arg for entrypoint
+CMD ["streamlit", "run", "app.py"]
