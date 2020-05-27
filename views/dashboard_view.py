@@ -25,9 +25,7 @@ class DashboardView(object):
 
             statuses = api.get_status(project_id)
             status_without_done = [i['id'] for i in statuses if i['id'] != 4]
-            issues = []
-            for s in status_without_done:
-                issues += api.get_issue_stats(project_id, s)
+            issues = api.get_issue_stats(project_id, status_without_done)
             issues += api.get_issue_stats_done(project_id, start_date, end_date)
             df = pd.DataFrame(issues)
             df['status_name'] = df['status'].apply(lambda x: x['name'])

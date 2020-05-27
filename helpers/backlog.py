@@ -1,7 +1,7 @@
 import json
 import urllib.request
 import urllib
-
+from typing import List
 
 class BacklogAPI(object):
 
@@ -10,7 +10,8 @@ class BacklogAPI(object):
         self.api_key = api_key
 
     def get_status(self, project_id):
-        url = urllib.parse.urljoin(self.endpoint, f'/api/v2/projects/{project_id}/statuses')
+        url = urllib.parse.urljoin(
+            self.endpoint, f'/api/v2/projects/{project_id}/statuses')
         query_params = urllib.parse.urlencode(
             {'apiKey': self.api_key,
 
@@ -20,16 +21,12 @@ class BacklogAPI(object):
             statuses = json.load(res)
         return statuses
 
-    def get_issue_stats(self, project_id, status) -> dict:
+    def get_issue_stats(self, project_id, status_list: List[int]) -> List[dict]:
         url = urllib.parse.urljoin(self.endpoint, '/api/v2/issues')
-        query_params = urllib.parse.urlencode(
-            {'apiKey': self.api_key,
-             'statusId[]': status,
-             'projectId[]': project_id,
-             'parentChild': 1,
-             'count': 100
-
-             })
+        param_list = [('statusId[]', status) for status in status_list]
+        param_list += [('apiKey', self.api_key), ('projectId[]',
+                                                  project_id), ('parentChild', 1), ('count', 100)]
+        query_params = urllib.parse.urlencode(param_list)
         req = urllib.request.Request('{}?{}'.format(url, query_params))
         with urllib.request.urlopen(req) as res:
             issues = json.load(res)
@@ -45,7 +42,7 @@ class BacklogAPI(object):
             projects = json.load(res)
         return projects
 
-    def get_issue_stats_done(self, project_id, start_date: str, end_date: str) -> dict:
+    def get_issue_stats_done(self, project_id, start_date: str, end_date: str) -> List[dict]:
         url = urllib.parse.urljoin(self.endpoint, '/api/v2/issues')
         query_params = urllib.parse.urlencode(
             {'apiKey': self.api_key,
