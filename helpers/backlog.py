@@ -1,6 +1,6 @@
 import json
 import urllib.request
-import urllib
+import urllib.parse 
 from typing import List
 
 class BacklogAPI(object):
