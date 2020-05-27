@@ -11,6 +11,9 @@ from helpers.word_cloud import word_clound_output
 class DashboardView(object):
     def __init__(self):
         st.title('Dashboard')
+        st.write("""
+        Find and analyze tasks that are not currently completed and completed tasks that have been updated on a specified date.
+        """)
         setting = Setting.load()
         api = BacklogAPI(endpoint=setting['endpoint'],
                          api_key=setting['api_key'])
@@ -18,9 +21,9 @@ class DashboardView(object):
         self.today = datetime.today()
         self.now = datetime.now(UTC)
         self.start_date = st.date_input(
-            label='Start date',
+            label='Updated since',
             value=self.today.replace(day=1)).strftime('%Y-%m-%d')
-        self.end_date = st.date_input(label='End date').strftime('%Y-%m-%d')
+        self.end_date = st.date_input(label='Updated until').strftime('%Y-%m-%d')
         projects = api.get_projects()
         project_list = [(p['id'], p['name'], p['projectKey'])
                         for p in projects]
