@@ -8,10 +8,11 @@ import base64
 from helpers.word_cloud import word_clound_output
 from views.base_view import BaseView
 
+
 class DashboardView(BaseView):
     def __init__(self, setting: Setting):
         super(DashboardView, self).__init__(setting)
-    
+
     def run(self):
         st.title('Dashboard')
         st.write("""
@@ -25,7 +26,8 @@ class DashboardView(BaseView):
         self.start_date = st.date_input(
             label='Updated since',
             value=self.today.replace(day=1)).strftime('%Y-%m-%d')
-        self.end_date = st.date_input(label='Updated until').strftime('%Y-%m-%d')
+        self.end_date = st.date_input(
+            label='Updated until').strftime('%Y-%m-%d')
         projects = api.get_projects()
         project_list = [(p['id'], p['name'], p['projectKey'])
                         for p in projects]
@@ -53,7 +55,6 @@ class DashboardView(BaseView):
             st.markdown(self.get_table_download_link(df),
                         unsafe_allow_html=True)
 
-
             st.write("""
             ## Issue count by status
             """)
@@ -64,11 +65,19 @@ class DashboardView(BaseView):
                     'assignee_name', 'status_name', 'count'
                 ]]
 
-            fig1 = px.bar(df_count_by_status,
-                          x='count',
-                          y='assignee_name',
-                          color='status_name',
-                          orientation='h')
+            fig1 = px.bar(
+                df_count_by_status,
+                x='count',
+                y='assignee_name',
+                color='status_name',
+                orientation='h',
+            )
+            fig1.update_yaxes(categoryorder='total ascending')
+            fig1.update_layout(
+                autosize=False,
+                height=700,
+                margin=dict(l=50, r=50, b=100, t=100, pad=4),
+            )
             st.plotly_chart(fig1, use_container_width=True)
 
             st.write("""
@@ -84,6 +93,12 @@ class DashboardView(BaseView):
                           y='assignee_name',
                           color='category_name',
                           orientation='h')
+            fig2.update_yaxes(categoryorder='total ascending')
+            fig2.update_layout(
+                autosize=False,
+                height=700,
+                margin=dict(l=50, r=50, b=100, t=100, pad=4),
+            )
             st.plotly_chart(fig2, use_container_width=True)
 
             st.write("""
@@ -103,27 +118,24 @@ class DashboardView(BaseView):
             df_count['digestibility'] = 100 * df_count['count_x'] / df_count[
                 'count_y']
 
-
             fig3 = px.bar(df_count[df_count['status_name'] == '完了'][[
                 'assignee_name', 'digestibility'
-            ]].sort_values(['digestibility'], ascending=True),
+            ]],
                           x='digestibility',
                           y='assignee_name',
                           orientation='h',
-                          range_x=[0,100]
-                          )
+                          range_x=[0, 100])
+            fig3.update_yaxes(categoryorder='total ascending')
 
             st.plotly_chart(fig3, use_container_width=True)
-
 
             st.write("""
             ## Do you remember me?
             These issues were created 60 days ago
             """)
-            st.dataframe(
-                df[df['created'] < self.now - timedelta(days=60)]
-                [['issueKey', 'summary', 'created_user_name', 'created']]
-            )
+            st.dataframe(df[df['created'] < self.now - timedelta(days=60)][[
+                'issueKey', 'summary', 'created_user_name', 'created'
+            ]])
 
             st.write("""
             ## Wordcloud
