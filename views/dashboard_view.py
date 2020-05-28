@@ -6,17 +6,19 @@ from models import Setting
 from datetime import datetime, timedelta, timezone
 import base64
 from helpers.word_cloud import word_clound_output
+from views.base_view import BaseView
 
-
-class DashboardView(object):
-    def __init__(self):
+class DashboardView(BaseView):
+    def __init__(self, setting: Setting):
+        super(DashboardView, self).__init__(setting)
+    
+    def run(self):
         st.title('Dashboard')
         st.write("""
         Find and analyze tasks that are not currently completed and completed tasks that have been updated on a specified date.
         """)
-        setting = Setting.load()
-        api = BacklogAPI(endpoint=setting['endpoint'],
-                         api_key=setting['api_key'])
+        api = BacklogAPI(endpoint=self.setting['endpoint'],
+                         api_key=self.setting['api_key'])
         UTC = timezone(timedelta(hours=0), 'UTC')
         self.today = datetime.today()
         self.now = datetime.now(UTC)
