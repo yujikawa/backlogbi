@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "backlogbi"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+plotly = "^4.7"
+plotly-express = "^0.4.1"
+streamlit = "^0.60.0"
+janome = "^0.3.10"
+wordcloud = "^1.7"
+pandas = "^1.0"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.5"
+yapf = "^0.30.0"
+flake8 = "^3.8"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

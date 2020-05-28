@@ -1,0 +1,2 @@
+from views.setting_view import SettingView
+from views.dashboard_view import DashboardView

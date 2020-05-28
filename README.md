@@ -1,8 +1,10 @@
 # BacklogBI
-BacklogBI is Backlog Business Intelligence.
-BacklogBI is mainly graph visualization.
 
-# How is this app run?
-docker-compose up
+## How to run this app?
+### Docker
+```
+$ docker build -t backlogbi .
+$ docker run -p 8501:8501 backlogbi
+```
 
-Please access to http://localhost.
+Please access to http://0.0.0.0:8501/
