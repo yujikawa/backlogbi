@@ -14,6 +14,7 @@ COPY poetry.lock tmp/poetry.lock
 COPY pyproject.toml tmp/pyproject.toml
 RUN cd /tmp && poetry install --no-dev
 
+WORKDIR /opt/backlogbi
 COPY . .
 EXPOSE 8501
 
