@@ -33,115 +33,118 @@ class DashboardView(BaseView):
                         for p in projects]
         (project_id, name, _) = st.selectbox('Select project', project_list)
 
-        button = st.button('Search')
+        st.write(f'# {name}')
 
-        if button:
+        statuses = api.get_status(project_id)
+        status_without_done = [i['id'] for i in statuses if i['id'] != 4]
+        issues = api.get_issue_stats(project_id, status_without_done)
+        issues += api.get_issue_stats_done(project_id, self.start_date,
+                                            self.end_date)
+        df = pd.DataFrame(issues)
+        df = self.convert_data(df)
+        users = df['assignee_name'].unique()
 
-            st.write(f'# {name}')
+        select_users = st.multiselect(label='selectusers', options=users)
+        if not select_users:
+            select_users = users
 
-            statuses = api.get_status(project_id)
-            status_without_done = [i['id'] for i in statuses if i['id'] != 4]
-            issues = api.get_issue_stats(project_id, status_without_done)
-            issues += api.get_issue_stats_done(project_id, self.start_date,
-                                               self.end_date)
-            df = pd.DataFrame(issues)
-            df = self.convert_data(df)
+        df = df[df['assignee_name'].isin(select_users)]
 
-            st.write(f"""
-            ## Fetch data({len(df)} rows)
-            """)
+        st.write(f"""
+        ## Fetch data({len(df)} rows)
+        """)
 
-            st.dataframe(df)
-            st.markdown(self.get_table_download_link(df),
-                        unsafe_allow_html=True)
+        st.dataframe(df)
+        st.markdown(self.get_table_download_link(df),
+                    unsafe_allow_html=True)
 
-            st.write("""
-            ## Issue count by status
-            """)
+        st.write("""
+        ## Issue count by status
+        """)
 
-            df_count_by_status = (df.groupby(
-                ['assignee_name', 'status_name'],
-                as_index=False).count().rename(columns={'id': 'count'}))[[
-                    'assignee_name', 'status_name', 'count'
-                ]]
+        df_count_by_status = (df.groupby(
+            ['assignee_name', 'status_name'],
+            as_index=False).count().rename(columns={'id': 'count'}))[[
+                'assignee_name', 'status_name', 'count'
+            ]]
 
-            fig1 = px.bar(
-                df_count_by_status,
-                x='count',
-                y='assignee_name',
-                color='status_name',
-                orientation='h',
-            )
-            fig1.update_yaxes(categoryorder='total ascending')
-            fig1.update_layout(
-                autosize=False,
-                height=700,
-                margin=dict(l=50, r=50, b=100, t=100, pad=4),
-            )
-            st.plotly_chart(fig1, use_container_width=True)
+        fig1 = px.bar(
+            df_count_by_status,
+            x='count',
+            y='assignee_name',
+            color='status_name',
+            orientation='h',
+        )
+        fig1.update_yaxes(categoryorder='total ascending')
+        fig1.update_layout(
+            autosize=False,
+            height=700,
+            margin=dict(l=50, r=50, b=100, t=100, pad=4),
+        )
+        st.plotly_chart(fig1, use_container_width=True)
 
-            st.write("""
-            ## Issue count by cateogry
-            """)
-            df_count_by_category = (df.groupby(
-                ['assignee_name', 'category_name'],
-                as_index=False).count().rename(columns={'id': 'count'}))[[
-                    'assignee_name', 'category_name', 'count'
-                ]]
-            fig2 = px.bar(df_count_by_category,
-                          x='count',
-                          y='assignee_name',
-                          color='category_name',
-                          orientation='h')
-            fig2.update_yaxes(categoryorder='total ascending')
-            fig2.update_layout(
-                autosize=False,
-                height=700,
-                margin=dict(l=50, r=50, b=100, t=100, pad=4),
-            )
-            st.plotly_chart(fig2, use_container_width=True)
+        st.write("""
+        ## Issue count by cateogry
+        """)
+        df_count_by_category = (df.groupby(
+            ['assignee_name', 'category_name'],
+            as_index=False).count().rename(columns={'id': 'count'}))[[
+                'assignee_name', 'category_name', 'count'
+            ]]
+        fig2 = px.bar(df_count_by_category,
+                        x='count',
+                        y='assignee_name',
+                        color='category_name',
+                        orientation='h')
+        fig2.update_yaxes(categoryorder='total ascending')
+        fig2.update_layout(
+            autosize=False,
+            height=700,
+            margin=dict(l=50, r=50, b=100, t=100, pad=4),
+        )
+        st.plotly_chart(fig2, use_container_width=True)
 
-            st.write("""
-            ## Issue digestibility
-            """)
+        st.write("""
+        ## Issue digestibility
+        """)
 
-            df_count_by_assignee = (df.groupby(
-                ['assignee_name'],
-                as_index=False).count().rename(columns={'id': 'count'}))[[
-                    'assignee_name', 'count'
-                ]]
+        df_count_by_assignee = (df.groupby(
+            ['assignee_name'],
+            as_index=False).count().rename(columns={'id': 'count'}))[[
+                'assignee_name', 'count'
+            ]]
 
-            df_count = pd.merge(df_count_by_status,
-                                df_count_by_assignee,
-                                on='assignee_name',
-                                how='left')
-            df_count['digestibility'] = 100 * df_count['count_x'] / df_count[
-                'count_y']
+        df_count = pd.merge(df_count_by_status,
+                            df_count_by_assignee,
+                            on='assignee_name',
+                            how='left')
+        df_count['digestibility'] = 100 * df_count['count_x'] / df_count[
+            'count_y']
 
-            fig3 = px.bar(df_count[df_count['status_name'] == '完了'][[
-                'assignee_name', 'digestibility'
-            ]],
-                          x='digestibility',
-                          y='assignee_name',
-                          orientation='h',
-                          range_x=[0, 100])
-            fig3.update_yaxes(categoryorder='total ascending')
+        fig3 = px.bar(df_count[df_count['status_name'] == '完了'][[
+            'assignee_name', 'digestibility'
+        ]],
+                        x='digestibility',
+                        y='assignee_name',
+                        orientation='h',
+                        range_x=[0, 100])
+        fig3.update_yaxes(categoryorder='total ascending')
 
-            st.plotly_chart(fig3, use_container_width=True)
+        st.plotly_chart(fig3, use_container_width=True)
 
-            st.write("""
-            ## Do you remember me?
-            These issues were created 60 days ago
-            """)
-            st.dataframe(df[df['created'] < self.now - timedelta(days=60)][[
-                'issueKey', 'summary', 'created_user_name', 'created'
-            ]])
+        st.write("""
+        ## Do you remember me?
+        These issues were created 60 days ago
+        """)
+        st.dataframe(df[df['created'] < self.now - timedelta(days=60)][[
+            'issueKey', 'summary', 'created_user_name', 'created'
+        ]])
 
-            st.write("""
-            ## Wordcloud
-            """)
-            wordcloud = word_clound_output(df.summary.unique())
-            st.image(wordcloud.to_image())
+        st.write("""
+        ## Wordcloud
+        """)
+        wordcloud = word_clound_output(df.summary.unique())
+        st.image(wordcloud.to_image())
 
     def convert_data(self, df: pd.DataFrame) -> pd.DataFrame:
         df['created'] = pd.to_datetime(df['created'])
